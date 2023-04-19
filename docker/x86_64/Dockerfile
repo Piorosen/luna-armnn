@@ -113,11 +113,11 @@ RUN apt-get update && apt-get install -y \
 # ENV LD_LIBRARY_PATH=$HOME/armnn-devenv/google/x86_64_pb_install/lib/:$LD_LIBRARY_PATH
 
 # Download ArmNN 64-bit
-RUN cd $HOME/armnn-devenv && git clone "https://github.com/Piorosen/luna-armnn" && \
+RUN cd $HOME/armnn-devenv && git clone "https://github.com/Piorosen/luna-armnn" armnn && \
     cd armnn/
 
 # Build 64-bit Compute Library
-RUN cd $HOME/armnn-devenv/ && git clone -b v22.05.1 https://github.com/Piorosen/luna-acl && \
+RUN cd $HOME/armnn-devenv/ && git clone https://github.com/Piorosen/luna-acl ComputeLibrary && \
     cd ComputeLibrary && \
     scons Werror=0 arch=arm64-v8a neon=1 opencl=0 embed_kernels=1 extra_cxx_flags="-fPIC" -j$(nproc)
 
@@ -211,3 +211,13 @@ RUN cd $HOME/armnn-devenv && \
     -DPROTOBUF_LIBRARY_RELEASE=$HOME/armnn-devenv/google/arm64_pb_install/lib/libprotobuf.so.23.0.0 && \
     make -j$(nproc)
 
+
+RUN apt install -y openssh-server && \
+        mkdir /var/run/sshd && \ 
+        echo 'root:root' | chpasswd && \
+        sed -ri 's/^#?PermitRootLogin\s+.*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+        sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config && \
+        mkdir /root/.ssh
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
