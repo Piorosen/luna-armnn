@@ -113,7 +113,7 @@ RUN apt-get update && apt-get install -y \
 # ENV LD_LIBRARY_PATH=$HOME/armnn-devenv/google/x86_64_pb_install/lib/:$LD_LIBRARY_PATH
 
 # Download ArmNN 64-bit
-RUN cd $HOME/armnn-devenv && git clone -b v22.05 "https://github.com/Piorosen/luna-armnn" && \
+RUN cd $HOME/armnn-devenv && git clone "https://github.com/Piorosen/luna-armnn" && \
     cd armnn/
 
 # Build 64-bit Compute Library
