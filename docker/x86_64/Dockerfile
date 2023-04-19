@@ -104,16 +104,6 @@ RUN cd $HOME/google/protobuf-3.12.0 && \
     --with-protoc=$HOME/armnn-devenv/google/x86_64_pb_install/bin/protoc && \
     make install -j$(nproc)
 
-# Build the arm32 version of the protobuf libraries
-RUN cd $HOME/google/protobuf-3.12.0 && \
-    mkdir arm32_build && cd arm32_build && \
-    export CC=arm-linux-gnueabihf-gcc && \
-    export CXX=arm-linux-gnueabihf-g++ && \
-    ../configure --host=arm-linux \
-    --prefix=$HOME/armnn-devenv/google/arm32_pb_install \
-    --with-protoc=$HOME/armnn-devenv/google/x86_64_pb_install/bin/protoc && \
-    make install -j$(nproc)
-
 # Dep Error - Bug ARMNN
 RUN apt-get update && apt-get install -y \
      python-numpy
@@ -123,24 +113,13 @@ RUN apt-get update && apt-get install -y \
 # ENV LD_LIBRARY_PATH=$HOME/armnn-devenv/google/x86_64_pb_install/lib/:$LD_LIBRARY_PATH
 
 # Download ArmNN 64-bit
-RUN cd $HOME/armnn-devenv && git clone "https://review.mlplatform.org/ml/armnn" && \
-    cd armnn/ && git checkout master
-
-# Download ArmNN 32-bit
-RUN cd $HOME/armnn-devenv && git clone "https://review.mlplatform.org/ml/armnn" armnn-32 && \
-    cd armnn-32/ && git checkout master
+RUN cd $HOME/armnn-devenv && git clone -b v22.05 "https://github.com/Piorosen/luna-armnn" && \
+    cd armnn/
 
 # Build 64-bit Compute Library
-RUN cd $HOME/armnn-devenv/ && git clone https://review.mlplatform.org/ml/ComputeLibrary && \
+RUN cd $HOME/armnn-devenv/ && git clone -b v22.05.1 https://github.com/Piorosen/luna-acl && \
     cd ComputeLibrary && \
-    git checkout $($HOME/armnn-devenv/armnn/scripts/get_compute_library.sh -p) && \
-    scons Werror=0 arch=arm64-v8a neon=1 opencl=1 embed_kernels=1 extra_cxx_flags="-fPIC" -j$(nproc)
-
-# Build 32-bit Compute Library
-RUN cd $HOME/armnn-devenv/ && mkdir ComputeLibrary_32 && git clone https://review.mlplatform.org/ml/ComputeLibrary ComputeLibrary_32 && \
-    cd ComputeLibrary_32 &&\
-    git checkout $($HOME/armnn-devenv/armnn/scripts/get_compute_library.sh -p) && \
-    scons Werror=0 arch=armv7a neon=1 opencl=1 embed_kernels=1 extra_cxx_flags="-fPIC" -j$(nproc)
+    scons Werror=0 arch=arm64-v8a neon=1 opencl=0 embed_kernels=1 extra_cxx_flags="-fPIC" -j$(nproc)
 
 # Download Tensorflow (Checkout latest tested version of TF using get_tensorflow.sh)
 RUN cd $HOME/armnn-devenv && \
@@ -163,24 +142,6 @@ RUN cd $HOME/armnn-devenv && \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON  -DCMAKE_SYSTEM_NAME=Linux \
           -DTFLITE_ENABLE_XNNPACK=OFF \
           -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
-          $HOME/armnn-devenv/tensorflow/tensorflow/lite/ && \
-    cmake --build .
-
-# Build 32-bit TF Lite
-RUN cd $HOME/armnn-devenv && \
-    curl -LO https://storage.googleapis.com/mirror.tensorflow.org/developer.arm.com/media/Files/downloads/gnu-a/8.3-2019.03/binrel/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf.tar.xz && \
-    mkdir tflite-toolchains-32 && \
-    tar xf gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf.tar.xz -C tflite-toolchains-32 && \
-    mkdir -p tflite-32/build && \
-    cd tflite-32/build && \
-    ARMCC_PREFIX=$HOME/armnn-devenv/tflite-toolchains-32/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf- && \
-    ARMCC_FLAGS="-funsafe-math-optimizations" && \
-    cmake -DCMAKE_C_COMPILER=${ARMCC_PREFIX}gcc \
-          -DCMAKE_CXX_COMPILER=${ARMCC_PREFIX}g++ \
-          -DCMAKE_C_FLAGS="${ARMCC_FLAGS}" -DCMAKE_CXX_FLAGS="${ARMCC_FLAGS}" \
-          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON  -DCMAKE_SYSTEM_NAME=Linux \
-          -DTFLITE_ENABLE_XNNPACK=OFF \
-          -DCMAKE_SYSTEM_PROCESSOR=armv7a \
           $HOME/armnn-devenv/tensorflow/tensorflow/lite/ && \
     cmake --build .
 
@@ -211,17 +172,6 @@ RUN cd $HOME/armnn-devenv && cd flatbuffers-1.12.0 && \
          -DFLATBUFFERS_BUILD_TESTS=0 && \
     make all install -j$(nproc)
 
-# Build arm32 version of Flatbuffers
-RUN cd $HOME/armnn-devenv && cd flatbuffers-1.12.0  && \
-    mkdir build-arm32 && \
-    cd build-arm32 && \
-    CXXFLAGS="-fPIC" cmake .. -DCMAKE_C_COMPILER=/usr/bin/arm-linux-gnueabihf-gcc \
-         -DCMAKE_CXX_COMPILER=/usr/bin/arm-linux-gnueabihf-g++ \
-         -DFLATBUFFERS_BUILD_FLATC=1 \
-         -DCMAKE_INSTALL_PREFIX:PATH=$HOME/armnn-devenv/flatbuffers-arm32 \
-         -DFLATBUFFERS_BUILD_TESTS=0 && \
-    make all install -j$(nproc)
-
 # Build onnx
 RUN cd $HOME/armnn-devenv && git clone https://github.com/onnx/onnx.git && \
     cd onnx && \
@@ -236,12 +186,6 @@ RUN cd $HOME/armnn-devenv && \
     cp ../tensorflow/tensorflow/lite/schema/schema.fbs . && \
     ../flatbuffers-1.12.0/build/flatc -c --gen-object-api --reflect-types --reflect-names schema.fbs
 
-# Generate TF Lite Schema 32-bit
-RUN cd $HOME/armnn-devenv && \
-    cd tflite-32 && \
-    cp ../tensorflow/tensorflow/lite/schema/schema.fbs . && \
-    ../flatbuffers-1.12.0/build/flatc -c --gen-object-api --reflect-types --reflect-names schema.fbs
-
 # Build 64-bit ArmNN
 RUN cd $HOME/armnn-devenv && \
     cd armnn && mkdir build && cd build && \
@@ -252,7 +196,7 @@ RUN cd $HOME/armnn-devenv && \
     -DBUILD_TESTS=1 \
     -DARMCOMPUTE_ROOT=$HOME/armnn-devenv/ComputeLibrary \
     -DARMCOMPUTE_BUILD_DIR=$HOME/armnn-devenv/ComputeLibrary/build/ \
-    -DARMCOMPUTENEON=1 -DARMCOMPUTECL=1 -DARMNNREF=1 \
+    -DARMCOMPUTENEON=1 -DARMCOMPUTECL=0 -DARMNNREF=1 \
     -DONNX_GENERATED_SOURCES=$HOME/armnn-devenv/onnx \
     -DBUILD_ONNX_PARSER=1 \
     -DBUILD_TF_LITE_PARSER=1 \
@@ -265,31 +209,5 @@ RUN cd $HOME/armnn-devenv && \
     -DPROTOBUF_ROOT=$HOME/armnn-devenv/google/x86_64_pb_install \
     -DPROTOBUF_LIBRARY_DEBUG=$HOME/armnn-devenv/google/arm64_pb_install/lib/libprotobuf.so.23.0.0 \
     -DPROTOBUF_LIBRARY_RELEASE=$HOME/armnn-devenv/google/arm64_pb_install/lib/libprotobuf.so.23.0.0 && \
-    make -j$(nproc)
-
-# Build 32-bit ArmNN
-RUN cd $HOME/armnn-devenv && \
-    cd armnn-32 && mkdir build && cd build && \
-    export CXX=arm-linux-gnueabihf-g++ && \
-    export CC=arm-linux-gnueabihf-gcc && \
-    cmake .. \
-    -DCMAKE_CXX_FLAGS=-w \
-    -DBUILD_TESTS=1 \
-    -DARMCOMPUTE_ROOT=$HOME/armnn-devenv/ComputeLibrary_32 \
-    -DARMCOMPUTE_BUILD_DIR=$HOME/armnn-devenv/ComputeLibrary_32/build/ \
-    -DARMCOMPUTENEON=1 -DARMCOMPUTECL=1 -DARMNNREF=1 \
-    -DONNX_GENERATED_SOURCES=$HOME/armnn-devenv/onnx \
-    -DBUILD_ONNX_PARSER=1 \
-    -DBUILD_TF_LITE_PARSER=1 \
-    -DBUILD_ARMNN_TFLITE_DELEGATE=1 \
-    -DTENSORFLOW_ROOT=$HOME/armnn-devenv/tensorflow \
-    -DTFLITE_LIB_ROOT=$HOME/armnn-devenv/tflite-32/build \
-    -DTF_LITE_SCHEMA_INCLUDE_PATH=$HOME/armnn-devenv/tflite-32 \
-    -DFLATBUFFERS_ROOT=$HOME/armnn-devenv/flatbuffers-arm32 \
-    -DFLATC_DIR=$HOME/armnn-devenv/flatbuffers-1.12.0/build \
-    -DPROTOBUF_ROOT=$HOME/armnn-devenv/google/x86_64_pb_install \
-    -DPROTOBUF_LIBRARY_DEBUG=$HOME/armnn-devenv/google/arm32_pb_install/lib/libprotobuf.so.23.0.0 \
-    -DPROTOBUF_LIBRARY_RELEASE=$HOME/armnn-devenv/google/arm32_pb_install/lib/libprotobuf.so.23.0.0 \
-    -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON && \
     make -j$(nproc)
 
