@@ -9,13 +9,16 @@
 #include <neon/NeonTensorHandle.hpp>
 #include <neon/NeonTimer.hpp>
 #include <armnn/backends/TensorHandle.hpp>
+#include <arm_compute/runtime/Scheduler.h>
 
 #include <armnn/Utils.hpp>
 
 #include <Half.hpp>
+#include <string>
 
 #define ARMNN_SCOPED_PROFILING_EVENT_NEON(name) \
-    std::cout << "LOG : " << name << "\n";
+    throw std::exception("ARMNN_SCOPED_PROFILING_EVENT_NEON");
+    // std::cout << "LOG : " << name << "\n";
     // ARMNN_SCOPED_PROFILING_EVENT_WITH_INSTRUMENTS(armnn::Compute::CpuAcc, \
     //                                               armnn::EmptyOptional(), \
     //                                               name, \
@@ -23,7 +26,8 @@
     //                                               armnn::WallClockTimer())
 
 #define ARMNN_SCOPED_PROFILING_EVENT_NEON_GUID(name, guid) \
-    std::cout << "LOG : Name : " << name << ", guid : " << guid <<  "\n";
+    arm_compute::Scheduler::get().set_current_kernel(name, guid);
+    // std::cout << "LOG : Name : " << name << ", guid : " << guid <<  "\n"; \
     // ARMNN_SCOPED_PROFILING_EVENT_WITH_INSTRUMENTS(armnn::Compute::CpuAcc, \
     //                                               guid, \
     //                                               name, \

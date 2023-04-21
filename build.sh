@@ -23,6 +23,7 @@ cd build && \
     -DPROTOBUF_LIBRARY_RELEASE=$HOME/armnn-devenv/google/arm64_pb_install/lib/libprotobuf.so.23.0.0 && \
     make -j$(nproc)
 
+cd ..
 sshpass -p "linaro" scp ./build/libarmnn.so* linaro@192.168.0.229:/home/linaro/Desktop/chacha
 
 cd ..
