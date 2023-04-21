@@ -2,6 +2,8 @@
 // Copyright © 2017 Arm Ltd and Contributors. All rights reserved.
 // SPDX-License-Identifier: MIT
 //
+#include <arm_compute/runtime/IScheduler.h>
+#include <arm_compute/runtime/Scheduler.h>
 
 #include "NeonBackendId.hpp"
 #include "NeonBackendModelContext.hpp"
@@ -65,7 +67,8 @@ void NeonWorkloadFactory::SetNumberOfThreads()
 
         if (numberOfThreads != 0 && numberOfThreads >= MIN_THREADS && numberOfThreads <= MAX_THREADS)
         {
-            arm_compute::Scheduler::get().set_num_threads(numberOfThreads);
+            std::cout << numberOfThreads << "쓰레드 생성 하는 것을 방지함." << std::endl;
+            // arm_compute::Scheduler::get().set_num_threads(numberOfThreads);
         }
     }
 }

@@ -247,6 +247,7 @@ bool TensorShape::AreAllDimensionsSpecified() const
     {
         if (!m_DimensionsSpecificity[i])
         {
+            printf("힝힝, %d", i);
             areAllDimensionsSpecified = false;
             break;
         }

@@ -15,18 +15,20 @@
 #include <Half.hpp>
 
 #define ARMNN_SCOPED_PROFILING_EVENT_NEON(name) \
-    ARMNN_SCOPED_PROFILING_EVENT_WITH_INSTRUMENTS(armnn::Compute::CpuAcc, \
-                                                  armnn::EmptyOptional(), \
-                                                  name, \
-                                                  armnn::NeonTimer(), \
-                                                  armnn::WallClockTimer())
+    std::cout << "LOG : " << name << "\n";
+    // ARMNN_SCOPED_PROFILING_EVENT_WITH_INSTRUMENTS(armnn::Compute::CpuAcc, \
+    //                                               armnn::EmptyOptional(), \
+    //                                               name, \
+    //                                               armnn::NeonTimer(), \
+    //                                               armnn::WallClockTimer())
 
 #define ARMNN_SCOPED_PROFILING_EVENT_NEON_GUID(name, guid) \
-    ARMNN_SCOPED_PROFILING_EVENT_WITH_INSTRUMENTS(armnn::Compute::CpuAcc, \
-                                                  guid, \
-                                                  name, \
-                                                  armnn::NeonTimer(), \
-                                                  armnn::WallClockTimer())
+    std::cout << "LOG : Name : " << name << ", guid : " << guid <<  "\n";
+    // ARMNN_SCOPED_PROFILING_EVENT_WITH_INSTRUMENTS(armnn::Compute::CpuAcc, \
+    //                                               guid, \
+    //                                               name, \
+    //                                               armnn::NeonTimer(), \
+    //                                               armnn::WallClockTimer())
 
 using namespace armnn::armcomputetensorutils;
 

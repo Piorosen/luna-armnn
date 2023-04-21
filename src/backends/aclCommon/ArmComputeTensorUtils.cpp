@@ -177,13 +177,21 @@ arm_compute::DataLayout ConvertDataLayout(armnn::DataLayout dataLayout)
 {
     switch(dataLayout)
     {
-        case armnn::DataLayout::NHWC : return arm_compute::DataLayout::NHWC;
+        case armnn::DataLayout::NHWC:
+            // std::cout << "Convert DataLayout : NHWC -> NHWC" << std::endl;
+            return arm_compute::DataLayout::NHWC;
 
-        case armnn::DataLayout::NCHW : return arm_compute::DataLayout::NCHW;
+        case armnn::DataLayout::NCHW: 
+            // std::cout << "Convert DataLayout : NCHW -> NCHW" << std::endl;
+            return arm_compute::DataLayout::NHWC;
 
-        case armnn::DataLayout::NDHWC : return arm_compute::DataLayout::NDHWC;
+        case armnn::DataLayout::NDHWC: 
+            // std::cout << "ERROR Convert DataLayout : NDHWC -> NDHWC" << std::endl;
+            return arm_compute::DataLayout::NDHWC;
 
-        case armnn::DataLayout::NCDHW : return arm_compute::DataLayout::NCDHW;
+        case armnn::DataLayout::NCDHW : 
+            // std::cout << "ERROR Convert DataLayout : NCDHW -> NCDHW" << std::endl;
+            return arm_compute::DataLayout::NCDHW;
 
         default: throw InvalidArgumentException("Unknown armnn::DataLayout: [" +
                                                 std::to_string(static_cast<int>(dataLayout)) + "]");

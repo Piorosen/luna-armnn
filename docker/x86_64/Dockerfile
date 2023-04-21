@@ -198,7 +198,7 @@ RUN cd $HOME/armnn-devenv && \
     -DARMCOMPUTE_BUILD_DIR=$HOME/armnn-devenv/ComputeLibrary/build/ \
     -DARMCOMPUTENEON=1 -DARMCOMPUTECL=0 -DARMNNREF=1 \
     -DONNX_GENERATED_SOURCES=$HOME/armnn-devenv/onnx \
-    -DBUILD_ONNX_PARSER=1 \
+    -DBUILD_ONNX_PARSER=0 \
     -DBUILD_TF_LITE_PARSER=1 \
     -DBUILD_ARMNN_TFLITE_DELEGATE=1 \
     -DTENSORFLOW_ROOT=$HOME/armnn-devenv/tensorflow \

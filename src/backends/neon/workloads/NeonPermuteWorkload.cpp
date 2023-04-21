@@ -6,6 +6,7 @@
 #include "NeonPermuteWorkload.hpp"
 #include <neon/NeonTensorHandle.hpp>
 #include <aclCommon/ArmComputeTensorUtils.hpp>
+#include <iostream>
 
 #include <arm_compute/core/Error.h>
 
@@ -48,6 +49,7 @@ NeonPermuteWorkload::NeonPermuteWorkload(const PermuteQueueDescriptor& descripto
 
 void NeonPermuteWorkload::Execute() const
 {
+    std::cout << "Permute Event!!" << std::endl;
     ARMNN_SCOPED_PROFILING_EVENT_NEON_GUID(GetName() + "_Execute", this->GetGuid());
     m_PermuteFunction.run();
 }

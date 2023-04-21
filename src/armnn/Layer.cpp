@@ -495,7 +495,7 @@ void Layer::VerifyShapeInferenceType(const TensorShape& outputShape, ShapeInfere
         ConditionalThrow<LayerValidationException>(
                 outputShape.GetDimensionality() != Dimensionality::NotSpecified,
                 "Dimensionality can not be NotSpecified while using ShapeInferenceMethod::ValidateOnly");
-
+        
         ConditionalThrow<LayerValidationException>(
                 outputShape.AreAllDimensionsSpecified(),
                 "Unspecified dimension while using ShapeInferenceMethod::ValidateOnly");
