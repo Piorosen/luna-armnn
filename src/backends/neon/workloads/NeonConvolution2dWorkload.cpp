@@ -134,7 +134,80 @@ NeonConvolution2dWorkload::NeonConvolution2dWorkload(
 
     const arm_compute::ActivationLayerInfo activationInfo = ConvertAdditionalInfoToAclActivationLayerInfo(descriptor);
 
-    arm_compute::Scheduler::get().set_conv_method(0); 
+    // 0 : Default
+    // 1 : Gemm_Direct
+    // 2 : General
+    // 3 : Winograd
+    for (int conv_i = 1; conv_i <= 3; conv_i++) { 
+        arm_compute::Scheduler::get().get_convolution_kernel(); 
+        arm_compute::Scheduler::get().set_conv_method(conv_i); 
+        auto tmp_layer = std::make_unique<arm_compute::NEConvolutionLayer>();
+        tmp_layer->configure(&input,
+                                    m_KernelTensor.get(),
+                                    m_BiasTensor.get(),
+                                    &output,
+                                    padStrideInfo,
+                                    arm_compute::WeightsInfo(),
+                                    aclDilationInfo,
+                                    activationInfo,
+                                    isFastMathEnabled);
+        int method = MethodToInt(tmp_layer->get_convolution_method(input.info(),
+                                                    m_KernelTensor->info(),
+                                                    output.info(),
+                                                    padStrideInfo,
+                                                    arm_compute::WeightsInfo(),
+                                                    aclDilationInfo,
+                                                    activationInfo,
+                                                    isFastMathEnabled));
+        std::cout << "Create Convolution : " << method << " " << conv_i << std::endl;
+        if (method == conv_i) { 
+            auto kernels = arm_compute::Scheduler::get().get_convolution_kernel(); 
+            std::cout << "kernels size : " << kernels.size() << " ()\n";
+            for (int k_i = 0; k_i < kernels.size(); k_i++) { 
+                std::cout << "\t" << kernels[k_i] << " ()\n";
+                switch (conv_i) { 
+                case 1:
+                    m_DirectConvolutionKernelName.push_back(kernels[k_i]);
+                    break;
+                case 2:
+                    m_GeneralConvolutionKernelName.push_back(kernels[k_i]);
+                    break;
+                case 3:
+                    m_WinogradConvolutionKernelName.push_back(kernels[k_i]);
+                    break;
+                default:
+                    printf("error!!!!\n\n\n");
+                    throw "error!";
+                }
+            }
+        }
+    }
+
+    int method_id = 0;
+    std::string kernel_name = "";
+
+    if (arm_compute::Scheduler::get().conv_method_callback != nullptr) { 
+        auto data = arm_compute::Scheduler::get().conv_method_callback(m_DirectConvolutionKernelName, 
+                                                                        m_GeneralConvolutionKernelName,
+                                                                        m_WinogradConvolutionKernelName);
+        method_id = std::get<0>(data);
+        int kernel_id = std::get<1>(data);
+
+        switch (method_id) { 
+            case 1:
+                kernel_name = m_DirectConvolutionKernelName[kernel_id];
+                break;
+            case 2:
+                kernel_name = m_GeneralConvolutionKernelName[kernel_id];
+                break;
+            case 3:
+                kernel_name = m_WinogradConvolutionKernelName[kernel_id];
+                break;
+        }
+    }
+
+    arm_compute::Scheduler::get().set_conv_method(method_id); 
+    arm_compute::Scheduler::get().set_gemm_kernelOps(kernel_name);
     auto mm_ConvolutionLayer = std::make_unique<arm_compute::NEConvolutionLayer>(memoryManager);
     mm_ConvolutionLayer->configure(&input,
                                 m_KernelTensor.get(),
@@ -155,66 +228,9 @@ NeonConvolution2dWorkload::NeonConvolution2dWorkload(
                                                  aclDilationInfo,
                                                  activationInfo,
                                                  isFastMathEnabled);
-    // 0 : Default
-    // 1 : Gemm_Direct
-    // 2 : General
-    // 3 : Winograd
-    // for (int conv_i = 1; conv_i <= 3; conv_i++) { 
-    //     arm_compute::Scheduler::get().get_convolution_kernel(); 
-    //     arm_compute::Scheduler::get().set_conv_method(conv_i); 
-    //     auto tmp_layer = std::make_unique<arm_compute::NEConvolutionLayer>();
-    //     tmp_layer->configure(&input,
-    //                                 m_KernelTensor.get(),
-    //                                 m_BiasTensor.get(),
-    //                                 &output,
-    //                                 padStrideInfo,
-    //                                 arm_compute::WeightsInfo(),
-    //                                 aclDilationInfo,
-    //                                 activationInfo,
-    //                                 isFastMathEnabled);
-    //     int method = MethodToInt(tmp_layer->get_convolution_method(input.info(),
-    //                                                 m_KernelTensor->info(),
-    //                                                 output.info(),
-    //                                                 padStrideInfo,
-    //                                                 arm_compute::WeightsInfo(),
-    //                                                 aclDilationInfo,
-    //                                                 activationInfo,
-    //                                                 isFastMathEnabled));
-    //     std::cout << "Create Convolution : " << method << " " << conv_i << std::endl;
-    //     if (method == conv_i) { 
-    //         auto kernels = arm_compute::Scheduler::get().get_convolution_kernel(); 
-    //         std::cout << "kernels size : " << kernels.size() << " ()\n";
-    //         for (int k_i = 0; k_i < kernels.size(); k_i++) { 
-    //             std::cout << "\t" << kernels[k_i] << " ()\n";
-    //             arm_compute::Scheduler::get().set_gemm_kernelOps(kernels[k_i]);
-    //             auto convolutionLayer = std::make_unique<arm_compute::NEConvolutionLayer>(memoryManager);
-    //             convolutionLayer->configure(&input,
-    //                                 m_KernelTensor.get(),
-    //                                 m_BiasTensor.get(),
-    //                                 &output,
-    //                                 padStrideInfo,
-    //                                 arm_compute::WeightsInfo(),
-    //                                 aclDilationInfo,
-    //                                 activationInfo,
-    //                                 isFastMathEnabled);
-    //             switch (conv_i) { 
-    //             case 1:
-    //                 m_GemmDirectConvolutionLayer.push_back(std::move(convolutionLayer));
-    //                 break;
-    //             case 2:
-    //                 m_GemmGeneralConvolutionLayer.push_back(std::move(convolutionLayer));
-    //                 break;
-    //             case 3:
-    //                 m_WinogradConvolutionLayer.push_back(std::move(convolutionLayer));
-    //                 break;
-    //             default:
-    //                 printf("error!!!!\n\n\n");
-    //                 // throw "error!";
-    //             }
-    //         }
-    //     }
-    // }
-  
+
+    mm_ConvolutionLayer = std::make_unique<arm_compute::NEConvolutionLayer>(memoryManager);
+    
     // Add details for profiling output
     WorkloadInfo detailsInfo;
 
@@ -245,15 +261,6 @@ NeonConvolution2dWorkload::NeonConvolution2dWorkload(
     }
 
     m_ConvolutionLayer->prepare();
-    // for (int i = 0; i < m_GemmDirectConvolutionLayer.size(); i++){ 
-    //     m_GemmDirectConvolutionLayer[i]->prepare();
-    // }
-    // for (int i = 0; i < m_GemmGeneralConvolutionLayer.size(); i++){ 
-    //     m_GemmGeneralConvolutionLayer[i]->prepare();
-    // }
-    // for (int i = 0; i < m_WinogradConvolutionLayer.size(); i++){ 
-    //     m_WinogradConvolutionLayer[i]->prepare();
-    // }
     FreeTensorIfUnused(m_KernelTensor);
     FreeTensorIfUnused(m_BiasTensor);
 }
@@ -261,23 +268,7 @@ NeonConvolution2dWorkload::NeonConvolution2dWorkload(
 void NeonConvolution2dWorkload::Execute() const
 {
     ARMNN_SCOPED_PROFILING_EVENT_NEON_GUID("NeonConvolution2dWorkload_Execute", this->GetGuid());
-    if (arm_compute::Scheduler::get().conv_method_callback != nullptr) { 
-        auto data = arm_compute::Scheduler::get().conv_method_callback(m_GemmDirectConvolutionLayer.size(), 
-                                                                        m_GemmGeneralConvolutionLayer.size(),
-                                                                        m_WinogradConvolutionLayer.size());
-        if (std::get<0>(data) == 1) { 
-            m_GemmDirectConvolutionLayer[std::get<1>(data)]->run();
-        }else if (std::get<0>(data) == 2) { 
-            m_GemmGeneralConvolutionLayer[std::get<1>(data)]->run();
-        }else if (std::get<0>(data) == 3) { 
-            m_WinogradConvolutionLayer[std::get<1>(data)]->run();
-        }else { 
-            // printf("잘못된, 연산 요청 범위 : [1,2,3]");
-            m_ConvolutionLayer->run();
-        }
-    }else { 
-        m_ConvolutionLayer->run();
-    }
+    m_ConvolutionLayer->run();
 }
 
 arm_compute::ConvolutionMethod NeonConvolution2dWorkload::GetConvolutionMethod() const

@@ -41,10 +41,12 @@ public:
 
 private:
     std::unique_ptr<arm_compute::IFunction> m_ConvolutionLayer;
-    std::vector<std::unique_ptr<arm_compute::IFunction>> m_GemmDirectConvolutionLayer;
-    std::vector<std::unique_ptr<arm_compute::IFunction>> m_GemmGeneralConvolutionLayer;
-    std::vector<std::unique_ptr<arm_compute::IFunction>> m_WinogradConvolutionLayer;
-
+    std::unique_ptr<arm_compute::IFunction> m_SelectedConvolutionConvolutionLayer;
+    
+    std::vector<std::string> m_DirectConvolutionKernelName;
+    std::vector<std::string> m_GeneralConvolutionKernelName;
+    std::vector<std::string> m_WinogradConvolutionKernelName;
+    
     std::unique_ptr<arm_compute::Tensor> m_KernelTensor;
     std::unique_ptr<arm_compute::Tensor> m_BiasTensor;
 
