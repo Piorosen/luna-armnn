@@ -138,7 +138,7 @@ RUN cd $HOME/armnn-devenv && \
     ARMCC_FLAGS="-funsafe-math-optimizations" && \
     cmake -DCMAKE_C_COMPILER=${ARMCC_PREFIX}gcc \
           -DCMAKE_CXX_COMPILER=${ARMCC_PREFIX}g++ \
-          -DCMAKE_C_FLAGS="${ARMCC_FLAGS}" -DCMAKE_CXX_FLAGS="${ARMCC_FLAGS}" \
+          -DCMAKE_C_FLAGS="${ARMCC_FLAGS} -pthread" -DCMAKE_CXX_FLAGS="${ARMCC_FLAGS} -pthread" \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON  -DCMAKE_SYSTEM_NAME=Linux \
           -DTFLITE_ENABLE_XNNPACK=OFF \
           -DCMAKE_SYSTEM_PROCESSOR=aarch64 \

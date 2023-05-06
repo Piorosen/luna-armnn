@@ -5,7 +5,7 @@
 #
 
 option(BUILD_ONNX_PARSER "Build Onnx parser" OFF)
-option(BUILD_UNIT_TESTS "Build unit tests" ON)
+option(BUILD_UNIT_TESTS "Build unit tests" OFF)
 option(BUILD_TESTS "Build test applications" OFF)
 option(BUILD_FOR_COVERAGE "Use no optimization and output .gcno and .gcda files" OFF)
 option(ARMCOMPUTENEON "Build with ARM Compute NEON support" OFF)
@@ -25,9 +25,9 @@ option(TF_LITE_GENERATED_PATH "Tensorflow lite generated C++ schema location" OF
 option(FLATBUFFERS_ROOT "Location where the flatbuffers 'include' and 'lib' folders to be found" Off)
 option(DYNAMIC_BACKEND_PATHS "Colon seperated list of paths where to load the dynamic backends from" "")
 option(SAMPLE_DYNAMIC_BACKEND "Include the sample dynamic backend and its tests in the build" OFF)
-option(BUILD_GATORD_MOCK "Build the Gatord simulator for external profiling testing." ON)
-option(BUILD_TIMELINE_DECODER "Build the Timeline Decoder for external profiling." ON)
-option(BUILD_BASE_PIPE_SERVER "Build the server to handle external profiling pipe traffic" ON)
+option(BUILD_GATORD_MOCK "Build the Gatord simulator for external profiling testing." OFF)
+option(BUILD_TIMELINE_DECODER "Build the Timeline Decoder for external profiling." OFF)
+option(BUILD_BASE_PIPE_SERVER "Build the server to handle external profiling pipe traffic" OFF)
 option(BUILD_PYTHON_WHL "Build Python wheel package" OFF)
 option(BUILD_PYTHON_SRC "Build Python source package" OFF)
 option(BUILD_STATIC_PIPE_LIBS "Build Static PIPE libraries" OFF)

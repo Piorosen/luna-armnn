@@ -5,7 +5,7 @@ cd build && \
     export CC=aarch64-linux-gnu-gcc && \
     cmake .. \
     -DCMAKE_CXX_FLAGS=-w \
-    -DBUILD_TESTS=1 \
+    -DBUILD_TESTS=0 \
     -DARMCOMPUTE_ROOT=$HOME/armnn-devenv/ComputeLibrary \
     -DARMCOMPUTE_BUILD_DIR=$HOME/armnn-devenv/ComputeLibrary/build/ \
     -DARMCOMPUTENEON=1 -DARMCOMPUTECL=0 -DARMNNREF=1 \
@@ -24,6 +24,6 @@ cd build && \
     make -j$(nproc)
 
 cd ..
-sshpass -p "linaro" scp ./build/libarmnn.so* linaro@192.168.0.229:/home/linaro/Desktop/chacha
 
-cd ..
+# sshpass -p "linaro" scp ./build/libarmnn.so* linaro@192.168.0.229:/home/linaro/Desktop/chacha
+# cd ..
