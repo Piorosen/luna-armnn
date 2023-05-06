@@ -134,16 +134,18 @@ RUN cd $HOME/armnn-devenv && \
     tar xvf gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu.tar.xz -C tflite-toolchains && \
     mkdir -p tflite/build && \
     cd tflite/build && \
-    ARMCC_PREFIX=$HOME/armnn-devenv/tflite-toolchains/gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu/bin/aarch64-linux-gnu- && \
+    ARMCC_PREFIX=aarch64-linux-gnu- && \
     ARMCC_FLAGS="-funsafe-math-optimizations" && \
     cmake -DCMAKE_C_COMPILER=${ARMCC_PREFIX}gcc \
           -DCMAKE_CXX_COMPILER=${ARMCC_PREFIX}g++ \
-          -DCMAKE_C_FLAGS="${ARMCC_FLAGS} -pthread" -DCMAKE_CXX_FLAGS="${ARMCC_FLAGS} -pthread" \
+          -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} ${ARMCC_FLAGS} -lpthread -ldl" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} ${ARMCC_FLAGS} -lpthread -ldl" \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON  -DCMAKE_SYSTEM_NAME=Linux \
           -DTFLITE_ENABLE_XNNPACK=OFF \
           -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+          -DCMAKE_INSTALL_PREFIX=$HOME/armnn-devenv/tensorflow-lite \
+          -DCMAKE_BUILD_TYPE=Release \
           $HOME/armnn-devenv/tensorflow/tensorflow/lite/ && \
-    cmake --build .
+    cmake --build . -- -j 32
 
 # Download Flatbuffers
 RUN cd $HOME/armnn-devenv && \

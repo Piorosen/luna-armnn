@@ -25,5 +25,5 @@ cd build && \
 
 cd ..
 
-# sshpass -p "linaro" scp ./build/libarmnn.so* linaro@192.168.0.229:/home/linaro/Desktop/chacha
-# cd ..
+sshpass -p "linaro" scp ./build/libarmnn.so* linaro@192.168.0.229:/home/linaro/Desktop/chacha
+cd ..
