@@ -107,7 +107,7 @@ NeonConvolution2dWorkload::NeonConvolution2dWorkload(
     const bool isFastMathEnabled)
     : NeonBaseWorkload<Convolution2dQueueDescriptor>(descriptor, info)
 {
-    using arm_compute::NEConvolutionLayer;
+        using arm_compute::NEConvolutionLayer;
 
     uint32_t numInputs = m_Data.m_Parameters.m_BiasEnabled ? 3: 2;
     m_Data.ValidateInputsOutputs("NeonConvolution2dWorkload", numInputs, 1);
@@ -133,7 +133,7 @@ NeonConvolution2dWorkload::NeonConvolution2dWorkload(
                                                                       m_Data.m_Parameters.m_DilationY);
 
     const arm_compute::ActivationLayerInfo activationInfo = ConvertAdditionalInfoToAclActivationLayerInfo(descriptor);
-
+    
     // 0 : Default
     // 1 : Gemm_Direct
     // 2 : General
@@ -205,7 +205,7 @@ NeonConvolution2dWorkload::NeonConvolution2dWorkload(
                 break;
         }
     }
-
+            
     arm_compute::Scheduler::get().set_conv_method(method_id); 
     arm_compute::Scheduler::get().set_gemm_kernelOps(kernel_name);
     auto mm_ConvolutionLayer = std::make_unique<arm_compute::NEConvolutionLayer>(memoryManager);
@@ -229,8 +229,7 @@ NeonConvolution2dWorkload::NeonConvolution2dWorkload(
                                                  activationInfo,
                                                  isFastMathEnabled);
 
-    mm_ConvolutionLayer = std::make_unique<arm_compute::NEConvolutionLayer>(memoryManager);
-    
+
     // Add details for profiling output
     WorkloadInfo detailsInfo;
 

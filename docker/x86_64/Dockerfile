@@ -142,10 +142,9 @@ RUN cd $HOME/armnn-devenv && \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON  -DCMAKE_SYSTEM_NAME=Linux \
           -DTFLITE_ENABLE_XNNPACK=OFF \
           -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
-          -DCMAKE_INSTALL_PREFIX=$HOME/armnn-devenv/tensorflow-lite \
           -DCMAKE_BUILD_TYPE=Release \
           $HOME/armnn-devenv/tensorflow/tensorflow/lite/ && \
-    cmake --build . -- -j 32
+    cmake --build . -- -j8
 
 # Download Flatbuffers
 RUN cd $HOME/armnn-devenv && \
