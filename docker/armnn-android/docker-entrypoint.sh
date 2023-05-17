@@ -11,7 +11,7 @@ dFlatBuffer=/home/armnn-devenv/flatbuffers
 function buildArmNN()
 {
     mkdir -p ${dArmNN}/armnn-devenv && cd ${dArmNN}/armnn-devenv
-    git clone https://github.com/Piorosen/luna-armnn.git && cd armnn/
+    git clone https://github.com/Piorosen/luna-armnn.git armnn && cd armnn/
     mkdir build && cd build
     CXX=aarch64-linux-android-clang++ \
     CC=aarch64-linux-android-clang \

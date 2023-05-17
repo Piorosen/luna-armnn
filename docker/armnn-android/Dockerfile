@@ -100,10 +100,10 @@ RUN echo "using gcc : arm : aarch64-linux-android-clang++ ;" > /home/armnn-deven
 
 # Build the Compute Library
 RUN cd /home/armnn-devenv && \
-    git clone https://github.com/Piorosen/luna-acl.git && \
+    git clone https://github.com/Piorosen/luna-acl.git ComputeLibrary && \
     cd ComputeLibrary && \
-    scons arch=armv8.2-a neon=1 opencl=1 embed_kernels=1 extra_cxx_flags="-fPIC" \
-    benchmark_tests=0 validation_tests=0 os=android -j8
+    scons arch=armv8.2-a neon=1 opencl=0 embed_kernels=1 extra_cxx_flags="-fPIC" \
+    benchmark_tests=0 validation_tests=0 os=android Werror=0 -j8
 
 # RUN mkdir /home/armnn-devenv/google && \
 RUN mkdir -p /home/armnn-devenv/google && \
@@ -133,7 +133,7 @@ RUN cd /home/armnn-devenv/google/ && \
 
 # Clone ARMNN
 RUN cd /home/armnn-devenv/ && \
-    git clone https://github.com/Piorosen/luna-armnn.git 
+    git clone https://github.com/Piorosen/luna-armnn.git armnn 
 
 # Generate TensorFlow protobuf definitions
 RUN cd /home/armnn-devenv/google/tensorflow && \
@@ -142,9 +142,18 @@ RUN cd /home/armnn-devenv/google/tensorflow && \
     /home/armnn-devenv/google/tf_pb /home/armnn-devenv/google/x86_pb_install
 
 ENV PATH=/home/armnn-devenv/toolchains/android-ndk-r17b:$PATH
+
+# RUN cd $HOME/armnn-devenv && \
+#     wget -O flatbuffers-1.12.0.tar.gz https://github.com/google/flatbuffers/archive/v1.12.0.tar.gz && \
+#     tar xf flatbuffers-1.12.0.tar.gz && \
+#     cd flatbuffers-1.12.0 && \
+#     rm -f CMakeCache.txt
+
 # Build Google Flatbuffers for ARMNN TFLite Parser
-RUN cd /home/armnn-devenv/ && \
-    git clone https://github.com/google/flatbuffers.git && \
+RUN cd /home/armnn-devenv && \
+    wget -O flatbuffers-1.12.0.tar.gz https://github.com/google/flatbuffers/archive/v1.12.0.tar.gz && \
+    tar xf flatbuffers-1.12.0.tar.gz && \
+    mv flatbuffers-1.12.0 flatbuffers && \
     cd flatbuffers && \
     cd android && cd jni && \
     rm -rf Application.mk && \
@@ -159,7 +168,7 @@ RUN cd /home/armnn-devenv/ && \
 COPY ./docker-entrypoint.sh /usr/bin
 RUN chmod +x /usr/bin/docker-entrypoint.sh
 
-RUN apt install -y openssh-server && \
+RUN apt update && apt install -y openssh-server && rm -rf /var/lib/apt/lists/* && \
         mkdir /var/run/sshd && \ 
         echo 'root:root' | chpasswd && \
         sed -ri 's/^#?PermitRootLogin\s+.*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
@@ -168,8 +177,55 @@ RUN apt install -y openssh-server && \
 
 EXPOSE 22
 
+# 
+# RUN rm -rf /home/armnn-devenv/toolchains && \
+#     mkdir /home/armnn-devenv/toolchains && \
+#     cd /home/armnn-devenv/toolchains && \
+#     wget "https://dl.google.com/android/repository/android-ndk-r25b-linux.zip?utm_source=developer.android.com&utm_medium=referral" -O android-ndk-r17b-linux-x86_64.zip && \
+#     unzip android-ndk-r17b-linux-x86_64.zip && \ 
+#     rm -rf android-ndk-r17b-linux-x86_64.zip
 
-ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+# ENV NDK=/home/armnn-devenv/toolchains/android-ndk-r25b 
+# RUN rm -rf $NDK/build/tools/make_standalone_toolchain.py
+# COPY ./make_standalone_toolchain.py $NDK/build/tools
+# RUN python3 $NDK/build/tools/make_standalone_toolchain.py \
+#     --arch arm64 \
+#     --api 26 \
+#     --stl=libc++ \
+#     --install-dir=/home/armnn-devenv/toolchains/aarch64-android-r25b-yaho \
+#     --force
+
+# ENV PATH=/home/armnn-devenv/toolchains/aarch64-android-r25b-yaho/bin:$PATH
+
+# BUILD ARMNN
+RUN cd /home/armnn-devenv/armnn && \
+    mkdir build && cd build && \
+    export CXX=aarch64-linux-android-clang++ && \
+    export CC=aarch64-linux-android-clang && \
+    cmake .. \
+    -DCMAKE_TRY_COMPILE_TARGET_TYPE="STATIC_LIBRARY" \
+    -DCMAKE_SYSTEM_NAME=Android \
+    -DCMAKE_SYSTEM_VERSION=26 \
+    -DCMAKE_CXX_STANDARD=14 \
+    -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+    -DBUILD_TESTS=0 \
+    -DCMAKE_EXE_LINKER_FLAGS="-pie -llog -lz" \
+    -DARMCOMPUTE_ROOT=/home/armnn-devenv/ComputeLibrary/ \
+    -DARMCOMPUTE_BUILD_DIR=/home/armnn-devenv/ComputeLibrary/build \
+    -DBOOST_ROOT=/home/armnn-devenv/boost/install/ \
+    -DARMCOMPUTENEON=1 -DARMCOMPUTECL=0 -DARMNNREF=0 \
+    -DTF_GENERATED_SOURCES=/home/armnn-devenv/google/tf_pb/ -DBUILD_TF_PARSER=1 \
+    -DCMAKE_ANDROID_STANDALONE_TOOLCHAIN=/home/armnn-devenv/toolchains/aarch64-android-r17b/ \
+    -DCMAKE_CXX_FLAGS="-w -fPIE -fPIC" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DPROTOBUF_ROOT=/home/armnn-devenv/google/arm64_pb_install/ && \
+    make -j8
+
+
+
+
+
+ENTRYPOINT ["/usr/sbin/sshd -D"]
 
 #To do:
 # 1. Flatbuffers build Application.mk hardcode value need to fix.
