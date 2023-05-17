@@ -100,9 +100,9 @@ RUN echo "using gcc : arm : aarch64-linux-android-clang++ ;" > /home/armnn-deven
 
 # Build the Compute Library
 RUN cd /home/armnn-devenv && \
-    git clone https://github.com/ARM-software/ComputeLibrary.git && \
+    git clone https://github.com/Piorosen/luna-acl.git && \
     cd ComputeLibrary && \
-    scons arch=arm64-v8a neon=1 opencl=1 embed_kernels=1 extra_cxx_flags="-fPIC" \
+    scons arch=armv8.2-a neon=1 opencl=1 embed_kernels=1 extra_cxx_flags="-fPIC" \
     benchmark_tests=0 validation_tests=0 os=android -j8
 
 # RUN mkdir /home/armnn-devenv/google && \
@@ -133,7 +133,7 @@ RUN cd /home/armnn-devenv/google/ && \
 
 # Clone ARMNN
 RUN cd /home/armnn-devenv/ && \
-    git clone https://github.com/ARM-software/armnn.git 
+    git clone https://github.com/Piorosen/luna-armnn.git 
 
 # Generate TensorFlow protobuf definitions
 RUN cd /home/armnn-devenv/google/tensorflow && \
@@ -158,7 +158,20 @@ RUN cd /home/armnn-devenv/ && \
 
 COPY ./docker-entrypoint.sh /usr/bin
 RUN chmod +x /usr/bin/docker-entrypoint.sh
+
+RUN apt install -y openssh-server && \
+        mkdir /var/run/sshd && \ 
+        echo 'root:root' | chpasswd && \
+        sed -ri 's/^#?PermitRootLogin\s+.*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+        sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config && \
+        mkdir /root/.ssh
+
+EXPOSE 22
+
+
 ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
 
 #To do:
 # 1. Flatbuffers build Application.mk hardcode value need to fix.
+
+

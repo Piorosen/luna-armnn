@@ -11,7 +11,7 @@ dFlatBuffer=/home/armnn-devenv/flatbuffers
 function buildArmNN()
 {
     mkdir -p ${dArmNN}/armnn-devenv && cd ${dArmNN}/armnn-devenv
-    git clone https://github.com/ARM-software/armnn.git && cd armnn/
+    git clone https://github.com/Piorosen/luna-armnn.git && cd armnn/
     mkdir build && cd build
     CXX=aarch64-linux-android-clang++ \
     CC=aarch64-linux-android-clang \
@@ -24,7 +24,7 @@ function buildArmNN()
     -DARMCOMPUTE_ROOT=/home/armnn-devenv/ComputeLibrary/ \
     -DARMCOMPUTE_BUILD_DIR=/home/armnn-devenv/ComputeLibrary/build \
     -DBOOST_ROOT=/home/armnn-devenv/boost/install/ \
-    -DARMCOMPUTENEON=1 -DARMCOMPUTECL=1 -DARMNNREF=1 \
+    -DARMCOMPUTENEON=1 -DARMCOMPUTECL=0 -DARMNNREF=1 \
     -DTF_GENERATED_SOURCES=/home/armnn-devenv/google/tf_pb/ -DBUILD_TF_PARSER=1 \
     -DPROTOBUF_ROOT=/home/armnn-devenv/google/arm64_pb_install/
     make -j8
@@ -35,7 +35,7 @@ function updateComputeLib()
 {
     pushd ${dComputeLib}
     git pull 
-    scons arch=arm64-v8a neon=1 opencl=1 embed_kernels=1 extra_cxx_flags="-fPIC" \
+    scons arch=armv8.2-a neon=1 opencl=0 embed_kernels=1 extra_cxx_flags="-fPIC" \
     benchmark_tests=0 validation_tests=0 os=android -j8
     echo "Compute Lib updated"
     popd
@@ -117,3 +117,5 @@ else
 fi
 
 exec "$@"
+
+/usr/sbin/sshd -D
