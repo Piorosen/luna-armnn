@@ -88,7 +88,7 @@ ENV PATH=/home/armnn-devenv/toolchains/aarch64-android-r17b/bin:$PATH
 # Build the Boost C++ libraries
 RUN mkdir /home/armnn-devenv/boost && \
     cd /home/armnn-devenv/boost && \
-    wget https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 && \
+    wget https://boostorg.jfrog.io/artifactory/main/release/1.64.0/source/boost_1_64_0.tar.bz2 && \
     tar xvf boost_1_64_0.tar.bz2
 
 RUN echo "using gcc : arm : aarch64-linux-android-clang++ ;" > /home/armnn-devenv/boost/user-config.jam && \
