@@ -73,9 +73,9 @@
 
     # for the moment will only build a static version of this common code
     # to simplify the build. No extra .so file to deploy to boards etc.
-    # add_library_ex(pipeClient STATIC ${pipeClient_sources})
+    add_library_ex(pipeClient STATIC ${pipeClient_sources})
 
-    # target_link_libraries(pipeClient pipeCommon)
+    target_link_libraries(pipeClient pipeCommon)
 
     target_compile_definitions(pipeClient PRIVATE "ARMNN_COMPILING_DLL")
 

@@ -476,8 +476,8 @@ add_subdirectory(third-party/fmt)
 target_link_libraries(armnn PUBLIC fmt)
 
 target_link_libraries(armnn PUBLIC armnnUtils)
-#target_link_libraries(armnn PUBLIC pipeCommon)
-#target_link_libraries(armnn PUBLIC pipeClient)
+target_link_libraries(armnn PUBLIC pipeCommon)
+target_link_libraries(armnn PUBLIC pipeClient)
 
 if(NOT BUILD_BARE_METAL)
     target_link_libraries(armnn PUBLIC ${CMAKE_DL_LIBS})
