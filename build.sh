@@ -25,5 +25,7 @@ cd build && \
 
 cd ..
 
-sshpass -p "linaro" scp ./build/libarmnn.so* linaro@192.168.0.10:/home/linaro/Desktop/chacha
-cd ..
+# sshpass -p "odroid" scp ./build/libarmnn.so* odroid@192.168.0.4:/mnt/usb/odroid
+sshpass -p "linaro" scp ./build/libarmnn.so* linaro@192.168.0.232:/home/linaro/Desktop/chacha
+
+# cd ..
